@@ -8,7 +8,7 @@ import math
 import re
 import time
 import sklearn
-
+import imgaug
 import tensorflow as tf
 import numpy as np
 import pandas as pd
@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import csv
 import imageio
 import skimage
+from skimage import exposure
 from config import Config
 from skimage.morphology import label
 from skimage.feature import canny
@@ -102,7 +103,7 @@ class DsbConfig(Config):
     NAME = "dsb"
       
     LEARNING_RATE = 1e-3
-    
+    RPN_ANCHOR_RATIOS = [0.5, 1, 2] 
     # If enabled, resizes instance masks to a smaller size to reduce
     # memory load. Recommended when using high-resolution image
     USE_MINI_MASK = True
@@ -113,9 +114,9 @@ class DsbConfig(Config):
     IMAGES_PER_GPU = 2
     # Total number of steps (batches of samples) to yield from generator before declaring one epoch finished and starting the next epoch.
     # typically be equal to the number of samples of your dataset divided by the batch size
-    STEPS_PER_EPOCH = 300
+    STEPS_PER_EPOCH = 300 # 175 * 4 = 700 ~~ train sample size of 670
     VALIDATION_STEPS = 70
-
+    BACKBONE = 'resnet101'
     # Number of classes (including background)
     NUM_CLASSES = 1 + 1  # background + nucleis
     IMAGE_MIN_DIM = 512
@@ -134,10 +135,10 @@ class DsbConfig(Config):
     POOL_SIZE = 7
     MASK_POOL_SIZE = 14
     MASK_SHAPE = [28, 28]
-    TRAIN_ROIS_PER_IMAGE = 512
+    TRAIN_ROIS_PER_IMAGE = 200
     RPN_NMS_THRESHOLD = 0.7
     MAX_GT_INSTANCES = 256
-    DETECTION_MAX_INSTANCES = 500 
+    DETECTION_MAX_INSTANCES = 400 
     # Minimum probability value to accept a detected instance
     # ROIs below this threshold are skipped
     DETECTION_MIN_CONFIDENCE = 0.7 # may be smaller?
@@ -145,7 +146,7 @@ class DsbConfig(Config):
     DETECTION_NMS_THRESHOLD = 0.3 # 0.3
     
     
-    #MEAN_PIXEL = np.array([0.,0.,0.])
+    MEAN_PIXEL = np.array([0.,0.,0.])
     
     # Weight decay regularization
     WEIGHT_DECAY = 0.0001
@@ -220,7 +221,11 @@ class DsbDataset(utils.Dataset):
     
     def preprocess(self, img):
         gray = skimage.color.rgb2gray(img.astype('uint8'))
+        #gray = exposure.equalize_adapthist(gray, nbins=256)
         img = skimage.color.gray2rgb(gray)
+        mean = np.mean(img)
+        std  = np.std(img)
+        #img  = (img-mean)/std
         img *= 255.
         return img
 #############################################################################################
@@ -257,14 +262,34 @@ elif init_with == "coco":
     # are different due to the different number of classes
     # See README for instructions to download the COCO weights
     model.load_weights(COCO_MODEL_PATH, by_name=True,
-                       exclude=["mrcnn_class_logits", "mrcnn_bbox_fc", 
+                       exclude=["mrcnn_class_logits", "mrcnn_bbox_fc",
                                 "mrcnn_bbox", "mrcnn_mask"])
 elif init_with == "last":
     # Load the last model you trained and continue training
     model.load_weights(model.find_last()[1], by_name=True)
 #########################################################################################
-model.train(dataset_train, dataset_val, 
-                learning_rate=config.LEARNING_RATE,
-                epochs=15, 
-                layers="all")
+#model.train(dataset_train, dataset_val, 
+#                learning_rate=config.LEARNING_RATE,
+#                epochs=15, 
+#                layers="all")
 
+#augmentation = imgaug.augmenters.Affine(rotate=(-10, 10),scale={"x": (0.5, 1.5), "y": (0.5, 1.5)})
+#augmentation = imgaug.augmenters.Affine(rotate=(-10, -10))
+#augmentation = imgaug.augmenters.EdgeDetect(alpha=(0.0,1.0))
+augmentation = imgaug.augmenters.Fliplr(0.5)
+#augmentation = None
+model.train(dataset_train, dataset_val,
+                     learning_rate=config.LEARNING_RATE,
+                     epochs=13,
+                     layers='all',
+                     augmentation=augmentation)
+
+#model.train(dataset_train, dataset_val,
+#                learning_rate=config.LEARNING_RATE/10,
+#                epochs=10,
+#                layers="all")
+#model.train(dataset_train, dataset_val,
+#                learning_rate=config.LEARNING_RATE/100,
+#                epochs=10,
+#                layers="all")
+os.system('sudo poweroff')
