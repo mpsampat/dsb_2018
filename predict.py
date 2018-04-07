@@ -162,7 +162,7 @@ class DsbConfig(Config):
     # ROIs below this threshold are skipped
     DETECTION_MIN_CONFIDENCE = 0.7 # may be smaller?
     # Non-maximum suppression threshold for detection
-    DETECTION_NMS_THRESHOLD = 0.3 # 0.3
+    DETECTION_NMS_THRESHOLD = 0.1 # 0.3
     
     
     MEAN_PIXEL = np.array([0.,0.,0.])
