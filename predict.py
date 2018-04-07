@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
 import sys
-sys.path.append('Mask_RCNN')
+sys.path.append(os.path.abspath('Mask_RCNN/mrcnn'))
 import random
 import math
 import re
@@ -41,10 +41,10 @@ ROOT_DIR = os.getcwd()
 MODEL_DIR = os.path.join(ROOT_DIR, "logs")
 
 # Local path to trained weights file
-COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
+#COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
 # Download COCO trained weights from Releases if needed
-if not os.path.exists(COCO_MODEL_PATH):
-    utils.download_trained_weights(COCO_MODEL_PATH)
+#if not os.path.exists(COCO_MODEL_PATH):
+#    utils.download_trained_weights(COCO_MODEL_PATH)
 ##############################################
 class DsbDataset(utils.Dataset):
 
@@ -136,8 +136,9 @@ class DsbConfig(Config):
   
     # Number of classes (including background)
     NUM_CLASSES = 1 + 1  # background + nucleis
-    IMAGE_MIN_DIM = 512
-    IMAGE_MAX_DIM = 512
+    #IMAGE_RESIZE_MODE = "pad64"
+    IMAGE_MIN_DIM = 1024
+    IMAGE_MAX_DIM = 1024
     IMAGE_PADDING = True  # currently, the False option is not supported
     RPN_ANCHOR_SCALES = (8, 16, 32, 64, 128)  # anchor side in pixels, maybe add a 256?
     # The strides of each layer of the FPN Pyramid. These values
