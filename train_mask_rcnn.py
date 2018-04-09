@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import sys
-sys.path.append('Mask_RCNN')
+sys.path.append('Mask_RCNN/mrcnn')
 import os
 import sys
 import random
@@ -114,14 +114,15 @@ class DsbConfig(Config):
     IMAGES_PER_GPU = 2
     # Total number of steps (batches of samples) to yield from generator before declaring one epoch finished and starting the next epoch.
     # typically be equal to the number of samples of your dataset divided by the batch size
-    STEPS_PER_EPOCH = 300 # 175 * 4 = 700 ~~ train sample size of 670
-    VALIDATION_STEPS = 70
+    STEPS_PER_EPOCH = 312 # 175 * 4 = 700 ~~ train sample size of 670
+    VALIDATION_STEPS = 35
     BACKBONE = 'resnet101'
     # Number of classes (including background)
     NUM_CLASSES = 1 + 1  # background + nucleis
     IMAGE_MIN_DIM = 512
     IMAGE_MAX_DIM = 512
-    IMAGE_PADDING = True  # currently, the False option is not supported
+    IMAGE_RESIZE_MODE = "square"
+
     RPN_ANCHOR_SCALES = (8, 16, 32, 64, 128)  # anchor side in pixels, maybe add a 256?
     # The strides of each layer of the FPN Pyramid. These values
     # are based on a Resnet101 backbone.
@@ -137,7 +138,7 @@ class DsbConfig(Config):
     MASK_SHAPE = [28, 28]
     TRAIN_ROIS_PER_IMAGE = 200
     RPN_NMS_THRESHOLD = 0.7
-    MAX_GT_INSTANCES = 256
+    MAX_GT_INSTANCES = 400
     DETECTION_MAX_INSTANCES = 400 
     # Minimum probability value to accept a detected instance
     # ROIs below this threshold are skipped
@@ -145,8 +146,8 @@ class DsbConfig(Config):
     # Non-maximum suppression threshold for detection
     DETECTION_NMS_THRESHOLD = 0.3 # 0.3
     
-    
-    MEAN_PIXEL = np.array([0.,0.,0.])
+    # Image mean (RGB)
+    MEAN_PIXEL = np.array([0.0,0.0,0.0])    
     
     # Weight decay regularization
     WEIGHT_DECAY = 0.0001
@@ -221,11 +222,11 @@ class DsbDataset(utils.Dataset):
     
     def preprocess(self, img):
         gray = skimage.color.rgb2gray(img.astype('uint8'))
-        #gray = exposure.equalize_adapthist(gray, nbins=256)
+        gray = exposure.equalize_adapthist(gray, nbins=256)
         img = skimage.color.gray2rgb(gray)
         mean = np.mean(img)
         std  = np.std(img)
-        #img  = (img-mean)/std
+        #img  = (img-mean)
         img *= 255.
         return img
 #############################################################################################
@@ -253,7 +254,7 @@ dataset_test.prepare()
 model = modellib.MaskRCNN(mode="training", config=config,
                           model_dir=MODEL_DIR)
 ################################################################################
-init_with = "coco"  # imagenet, coco, or last
+init_with = "last"  # imagenet, coco, or last
 
 if init_with == "imagenet":
     model.load_weights(model.get_imagenet_weights(), by_name=True)
@@ -274,13 +275,19 @@ elif init_with == "last":
 #                layers="all")
 
 #augmentation = imgaug.augmenters.Affine(rotate=(-10, 10),scale={"x": (0.5, 1.5), "y": (0.5, 1.5)})
-#augmentation = imgaug.augmenters.Affine(rotate=(-10, -10))
+augmentation = imgaug.augmenters.Affine(rotate=(-10, -10))
 #augmentation = imgaug.augmenters.EdgeDetect(alpha=(0.0,1.0))
-augmentation = imgaug.augmenters.Fliplr(0.5)
+#augmentation = imgaug.augmenters.Fliplr(0.5)
+augmentation = imgaug.augmenters.OneOf([
+               imgaug.augmenters.Fliplr(0.5),
+               imgaug.augmenters.AdditiveGaussianNoise(scale=(0, 0.05*255))
+               #imgaug.augmenters.Affine(rotate=(-10,10)),
+               #imgaug.augmenters.Flipud(1.0)
+])
 #augmentation = None
 model.train(dataset_train, dataset_val,
                      learning_rate=config.LEARNING_RATE,
-                     epochs=13,
+                     epochs=25,
                      layers='all',
                      augmentation=augmentation)
 
