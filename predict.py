@@ -107,10 +107,11 @@ class DsbDataset(utils.Dataset):
     
     def preprocess(self, img):
         gray = skimage.color.rgb2gray(img.astype('uint8'))
+        gray = exposure.equalize_adapthist(gray, nbins=256)
         img = skimage.color.gray2rgb(gray)
         mean = np.mean(img)
         std  = np.std(img)
-        #img = (img-mean)/std        
+        #img = (img-mean)
         img = img*255.
         return img
 ##############################################
@@ -164,7 +165,7 @@ class DsbConfig(Config):
     # Non-maximum suppression threshold for detection
     DETECTION_NMS_THRESHOLD = 0.1 # 0.3
     
-    
+    #MEAN_PIXEL = np.array([123.7, 116.8, 103.9]) 
     MEAN_PIXEL = np.array([0.,0.,0.])
     
     # Weight decay regularization
