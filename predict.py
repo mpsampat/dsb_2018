@@ -161,7 +161,7 @@ class DsbConfig(Config):
     DETECTION_MAX_INSTANCES = 500 
     # Minimum probability value to accept a detected instance
     # ROIs below this threshold are skipped
-    DETECTION_MIN_CONFIDENCE = 0.7 # may be smaller?
+    DETECTION_MIN_CONFIDENCE = 0 # may be smaller?
     # Non-maximum suppression threshold for detection
     DETECTION_NMS_THRESHOLD = 0.1 # 0.3
     

@@ -121,7 +121,7 @@ class DsbConfig(Config):
     NUM_CLASSES = 1 + 1  # background + nucleis
     IMAGE_MIN_DIM = 512
     IMAGE_MAX_DIM = 512
-    IMAGE_RESIZE_MODE = "square"
+    IMAGE_RESIZE_MODE = "crop"
 
     RPN_ANCHOR_SCALES = (8, 16, 32, 64, 128)  # anchor side in pixels, maybe add a 256?
     # The strides of each layer of the FPN Pyramid. These values
@@ -142,7 +142,7 @@ class DsbConfig(Config):
     DETECTION_MAX_INSTANCES = 400 
     # Minimum probability value to accept a detected instance
     # ROIs below this threshold are skipped
-    DETECTION_MIN_CONFIDENCE = 0.7 # may be smaller?
+    DETECTION_MIN_CONFIDENCE = 0.0 # may be smaller?
     # Non-maximum suppression threshold for detection
     DETECTION_NMS_THRESHOLD = 0.3 # 0.3
     
@@ -254,7 +254,7 @@ dataset_test.prepare()
 model = modellib.MaskRCNN(mode="training", config=config,
                           model_dir=MODEL_DIR)
 ################################################################################
-init_with = "last"  # imagenet, coco, or last
+init_with = "coco"  # imagenet, coco, or last
 
 if init_with == "imagenet":
     model.load_weights(model.get_imagenet_weights(), by_name=True)
@@ -275,14 +275,15 @@ elif init_with == "last":
 #                layers="all")
 
 #augmentation = imgaug.augmenters.Affine(rotate=(-10, 10),scale={"x": (0.5, 1.5), "y": (0.5, 1.5)})
-augmentation = imgaug.augmenters.Affine(rotate=(-10, -10))
+#augmentation = imgaug.augmenters.Affine(rotate=(-10, -10))
 #augmentation = imgaug.augmenters.EdgeDetect(alpha=(0.0,1.0))
 #augmentation = imgaug.augmenters.Fliplr(0.5)
 augmentation = imgaug.augmenters.OneOf([
-               imgaug.augmenters.Fliplr(0.5),
-               imgaug.augmenters.AdditiveGaussianNoise(scale=(0, 0.05*255))
+               imgaug.augmenters.Fliplr(1.0),
+               imgaug.augmenters.AdditiveGaussianNoise(scale=(0, 0.05*255)),
+               imgaug.augmenters.Flipud(1.0)
+               #imgaug.augmenters.ElasticTransformation(alpha=(0, 5.0), sigma=0.25)
                #imgaug.augmenters.Affine(rotate=(-10,10)),
-               #imgaug.augmenters.Flipud(1.0)
 ])
 #augmentation = None
 model.train(dataset_train, dataset_val,
