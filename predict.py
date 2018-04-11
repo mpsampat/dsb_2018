@@ -115,7 +115,8 @@ class DsbDataset(utils.Dataset):
         img = img*255.
         return img
 ##############################################
-class DsbConfig(Config):
+from train_mask_rcnn import DsbConfig
+class DsbConfig2(Config):
 
     # Give the configuration a recognizable name
     NAME = "dsb"
@@ -138,8 +139,7 @@ class DsbConfig(Config):
     # Number of classes (including background)
     NUM_CLASSES = 1 + 1  # background + nucleis
     #IMAGE_RESIZE_MODE = "pad64"
-    IMAGE_MIN_DIM = 1024
-    IMAGE_MAX_DIM = 1024
+    IMAGE_RESIZE_MODE = "none"
     IMAGE_PADDING = True  # currently, the False option is not supported
     RPN_ANCHOR_SCALES = (8, 16, 32, 64, 128)  # anchor side in pixels, maybe add a 256?
     # The strides of each layer of the FPN Pyramid. These values
