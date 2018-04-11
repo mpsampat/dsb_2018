@@ -10,7 +10,7 @@
 5. Unzip our zip file. it will have a folder dsb_2018. 
 6. cd to the dsb_2018 and git clone Mask_RCNN from here. https://github.com/matterport/Mask_RCNN.git
 ## Run training 
-    1. cd to dsb_2018 and do git checkout result-0.461
+    1. cd to dsb_2018 and do git checkout result-0.472
 	2. Then run train_mask_rcnn.py script
 ## Run testing
     1. cd to dsb_2018 and run ./predict.py. 
