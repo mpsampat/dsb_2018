@@ -32,7 +32,7 @@ import model as modellib
 import visualize
 from model import log
 import sys
-sys.path.append('Mask_RCNN')
+sys.path.append('Mask_RCNN/mrcnn')
 ##############################################
 # Root directory of the project
 ROOT_DIR = os.getcwd()
@@ -115,8 +115,7 @@ class DsbDataset(utils.Dataset):
         img = img*255.
         return img
 ##############################################
-from train_mask_rcnn import DsbConfig
-class DsbConfig2(Config):
+class DsbConfig(Config):
 
     # Give the configuration a recognizable name
     NAME = "dsb"
@@ -139,8 +138,9 @@ class DsbConfig2(Config):
     # Number of classes (including background)
     NUM_CLASSES = 1 + 1  # background + nucleis
     #IMAGE_RESIZE_MODE = "pad64"
-    IMAGE_RESIZE_MODE = "none"
-    IMAGE_PADDING = True  # currently, the False option is not supported
+    IMAGE_MAX_DIM = 1024;
+    IMAGE_MIN_DIM = 1024;
+    IMAGE_RESIZE_MODE = "square"
     RPN_ANCHOR_SCALES = (8, 16, 32, 64, 128)  # anchor side in pixels, maybe add a 256?
     # The strides of each layer of the FPN Pyramid. These values
     # are based on a Resnet101 backbone.
