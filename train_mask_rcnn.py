@@ -120,15 +120,15 @@ class DsbConfig(Config):
     # Number of classes (including background)
     NUM_CLASSES = 1 + 1  # background + nucleis
     IMAGE_MIN_DIM = 512
-    IMAGE_MAX_DIM = 512
-    IMAGE_RESIZE_MODE = "crop"
+    IMAGE_MAX_DIM = 1024
+    IMAGE_RESIZE_MODE = "square"
 
     RPN_ANCHOR_SCALES = (8, 16, 32, 64, 128)  # anchor side in pixels, maybe add a 256?
     # The strides of each layer of the FPN Pyramid. These values
     # are based on a Resnet101 backbone.
     BACKBONE_STRIDES = [4, 8, 16, 32, 64]
     # How many anchors per image to use for RPN training
-    RPN_TRAIN_ANCHORS_PER_IMAGE = 320 #300
+    RPN_TRAIN_ANCHORS_PER_IMAGE = 64 #300
     
     # ROIs kept after non-maximum supression (training and inference)
     POST_NMS_ROIS_TRAINING = 2000
@@ -137,7 +137,7 @@ class DsbConfig(Config):
     MASK_POOL_SIZE = 14
     MASK_SHAPE = [28, 28]
     TRAIN_ROIS_PER_IMAGE = 200
-    RPN_NMS_THRESHOLD = 0.7
+    RPN_NMS_THRESHOLD = 0.9
     MAX_GT_INSTANCES = 400
     DETECTION_MAX_INSTANCES = 400 
     # Minimum probability value to accept a detected instance
@@ -279,9 +279,9 @@ elif init_with == "last":
 #augmentation = imgaug.augmenters.EdgeDetect(alpha=(0.0,1.0))
 #augmentation = imgaug.augmenters.Fliplr(0.5)
 augmentation = imgaug.augmenters.OneOf([
-               imgaug.augmenters.Fliplr(1.0),
-               imgaug.augmenters.AdditiveGaussianNoise(scale=(0, 0.05*255)),
-               imgaug.augmenters.Flipud(1.0)
+               imgaug.augmenters.Fliplr(0.5),
+               imgaug.augmenters.AdditiveGaussianNoise(scale=(0, 0.05*255))
+               #imgaug.augmenters.Flipud(1.0)
                #imgaug.augmenters.ElasticTransformation(alpha=(0, 5.0), sigma=0.25)
                #imgaug.augmenters.Affine(rotate=(-10,10)),
 ])
